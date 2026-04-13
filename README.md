@@ -1,6 +1,7 @@
 Energy Use in Irrigated Agriculture复现项目
+
 项目简介
-本仓库用于复现 Lund et al. (2025) 论文 “Global Energy Use and Carbon Emissions in Irrigated Agriculture” 中的关键结果，包括文章中的一些主要结果图（Fig1–Fig5）。
+本仓库用于复现 灌溉农业中的能源利用复现项目 项目简介 本仓库用于复现Jingxiu Qin et al. (2024) 论文 “Global Energy Use and Carbon Emissions in Irrigated Agriculture” 中的关键结果，包括文章中的一些主要结果图（Fig1–Fig5）。
 
 全文链接
 
