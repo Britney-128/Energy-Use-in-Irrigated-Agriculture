@@ -1,0 +1,396 @@
+continent_cols <- c(
+  "Asia" = "#66b3ff",
+  "Europe" = "#ff9933",
+  "Africa" = "#e67300",
+  "North America" = "#0066cc",
+  "South America" = "#ffff66",
+  "Oceania" = "#009966"
+)
+
+irrigation_cols <- c(
+  "Drip" = "#ff4d4d",
+  "Sprinkler" = "#6699cc",
+  "Surface" = "#ffdd66",
+  "Diesel pumping" = "#66cc99",
+  "Electric pumping" = "#9999cc"
+)
+set.seed(123)
+n_countries <- 120
+continents <- sample(names(continent_cols), n_countries, replace = TRUE,
+                     prob = c(0.25, 0.2, 0.25, 0.15, 0.1, 0.05))
+
+water_intensity <- rlnorm(n_countries, meanlog = log(5), sdlog = 0.8)
+water_intensity[continents == "Asia"] <- rlnorm(sum(continents == "Asia"), log(8), 0.7)
+water_intensity[continents == "Africa"] <- rlnorm(sum(continents == "Africa"), log(6), 0.8)
+
+energy_intensity <- 0.8 * water_intensity + rnorm(n_countries, 0, 3)
+energy_intensity[energy_intensity < 0] <- 0
+
+co2_intensity <- 0.9 * water_intensity + rnorm(n_countries, 0, 2.5)
+co2_intensity[co2_intensity < 0] <- 0
+
+countries <- rep("", n_countries)
+key_countries <- c("Oman", "Kuwait", "United Arab Emirates", "Saudi Arabia", "Namibia",
+                   "Zimbabwe", "Malawi", "Botswana", "Mauritania", "Kenya", "Venezuela",
+                   "Brunei", "Cameroon", "Chad", "Iran", "Nicaragua", "India", "United States",
+                   "China", "Brazil", "Japan", "South Korea")
+key_idx <- sample(1:n_countries, length(key_countries))
+countries[key_idx] <- key_countries
+
+scatter_data <- tibble(
+  country = countries,
+  continent = continents,
+  water_intensity = water_intensity,
+  energy_intensity = energy_intensity,
+  co2_intensity = co2_intensity
+)
+
+irrigation_methods <- names(irrigation_cols)
+n_irr <- length(irrigation_methods)
+n_samples <- 50
+
+energy_box_data <- tibble(
+  irrigation = rep(irrigation_methods, each = n_samples),
+  energy_intensity = c(
+    rnorm(n_samples, 1.2, 0.3),
+    rnorm(n_samples, 1.8, 0.5),
+    rnorm(n_samples, 1.0, 0.4),
+    rnorm(n_samples, 1.5, 0.6),
+    rnorm(n_samples, 0.8, 0.3)
+  )
+)
+
+co2_box_data <- tibble(
+  irrigation = rep(irrigation_methods, each = n_samples),
+  co2_intensity = c(
+    rnorm(n_samples, 120, 30),
+    rnorm(n_samples, 180, 50),
+    rnorm(n_samples, 100, 40),
+    rnorm(n_samples, 150, 60),
+    rnorm(n_samples, 80, 30)
+  )
+)
+plot_a <- ggplot(scatter_data, aes(x = water_intensity, y = energy_intensity, color = continent)) +
+  geom_point(size = 3, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "gray50", linewidth = 1) +
+  geom_text_repel(aes(label = country), size = 3, max.overlaps = 20, segment.color = NA) +
+  scale_color_manual(values = continent_cols) +
+  scale_x_continuous(limits = c(0, 60), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 25), expand = c(0, 0)) +
+  labs(x = "Water-use intensity\n(10³ m³/ha)",
+       y = "Energy intensity\n(GJ/ha)",
+       tag = "a") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    axis.line = element_line(color = "black"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    plot.tag = element_text(size = 14, face = "bold"),
+    text = element_text(family = "Arial")
+  )
+ continent_cols <- c(
+  "Asia" = "#66b3ff",
+  "Europe" = "#ff9933",
+  "Africa" = "#e67300",
+  "North America" = "#0066cc",
+  "South America" = "#ffff66",
+  "Oceania" = "#009966"
+)
+irrigation_cols <- c(
+  "Drip" = "#ff4d4d",
+  "Sprinkler" = "#6699cc",
+  "Surface" = "#ffdd66",
+  "Diesel pumping" = "#66cc99",
+  "Electric pumping" = "#9999cc"
+)
+set.seed(123)
+n_countries <- 120
+
+continents <- sample(names(continent_cols), n_countries, replace = TRUE,
+                     prob = c(0.25,0.2,0.25,0.15,0.1,0.05))
+
+water_intensity <- rlnorm(n_countries, meanlog = log(5), sdlog = 0.8)
+water_intensity[continents=="Asia"] <- rlnorm(sum(continents=="Asia"), log(8), 0.7)
+water_intensity[continents=="Africa"] <- rlnorm(sum(continents=="Africa"), log(6), 0.8)
+
+energy_intensity <- 0.8*water_intensity + rnorm(n_countries,0,3)
+energy_intensity[energy_intensity<0] <- 0
+
+co2_intensity <- 0.9*water_intensity + rnorm(n_countries,0,2.5)
+co2_intensity[co2_intensity<0] <- 0
+
+countries <- rep("", n_countries)
+key_countries <- c("Oman","Kuwait","United Arab Emirates","Saudi Arabia",
+                   "Namibia","Zimbabwe","Malawi","Botswana","Mauritania","Kenya",
+                   "Venezuela","Brunei","Cameroon","Chad","Iran","Nicaragua",
+                   "India","United States","China","Brazil","Japan","South Korea")
+key_idx <- sample(1:n_countries, length(key_countries))
+countries[key_idx] <- key_countries
+
+scatter_data <- tibble(
+  country = countries,
+  continent = continents,
+  water_intensity = water_intensity,
+  energy_intensity = energy_intensity,
+  co2_intensity = co2_intensity
+)
+
+irrigation_methods <- names(irrigation_cols)
+n_samples <- 50
+
+energy_box_data <- tibble(
+  irrigation = rep(irrigation_methods, each=n_samples),
+  energy_intensity = c(
+    rnorm(n_samples,1.2,0.3),
+    rnorm(n_samples,1.8,0.5),
+    rnorm(n_samples,1.0,0.4),
+    rnorm(n_samples,1.5,0.6),
+    rnorm(n_samples,0.8,0.3)
+  )
+)
+
+co2_box_data <- tibble(
+  irrigation = rep(irrigation_methods, each=n_samples),
+  co2_intensity = c(
+    rnorm(n_samples,120,30),
+    rnorm(n_samples,180,50),
+    rnorm(n_samples,100,40),
+    rnorm(n_samples,150,60),
+    rnorm(n_samples,80,30)
+  )
+)
+plot_a <- ggplot(scatter_data, aes(x=water_intensity, y=energy_intensity, color=continent)) +
+  geom_point(size=3, alpha=0.8) +
+  geom_smooth(method="lm", se=FALSE, linetype="dashed", color="gray50", linewidth=1) +
+  geom_text_repel(aes(label=country), size=3, max.overlaps=20, segment.color=NA) +
+  scale_color_manual(values=continent_cols) +
+  scale_x_continuous(limits=c(0,60), expand=c(0,0)) +
+  scale_y_continuous(limits=c(0,25), expand=c(0,0)) +
+  labs(x="Water-use intensity\n(10³ m³/ha)",
+       y="Energy intensity\n(GJ/ha)", tag="a") +
+  theme_minimal() +
+  theme(panel.grid=element_blank(),
+        axis.line=element_line(color="black"),
+        legend.position="top",
+        legend.title=element_blank(),
+        plot.tag=element_text(size=14, face="bold"))
+
+plot_a
+plot_b <- ggplot(energy_box_data, aes(x=irrigation, y=energy_intensity, fill=irrigation)) +
+  geom_boxplot(outlier.shape=NA, alpha=0.8, width=0.6) +
+  stat_summary(fun=mean, geom="point", shape=18, size=3, color="black") +
+  stat_summary(fun=mean, fun.min=function(x) mean(x)-sd(x), fun.max=function(x) mean(x)+sd(x),
+               geom="errorbar", width=0.2, color="black") +
+  scale_fill_manual(values=irrigation_cols) +
+  scale_y_continuous(limits=c(0,4), expand=c(0,0)) +
+  labs(y="Energy intensity\n(MJ/m³)", tag="b") +
+  theme_minimal() +
+  theme(panel.grid=element_blank(), axis.line=element_line(color="black"),
+        legend.position="none", axis.text.x=element_text(angle=90, hjust=1),
+        plot.tag=element_text(size=14, face="bold"))
+  plot_c <- ggplot(scatter_data, aes(x=water_intensity, y=co2_intensity, color=continent)) +
+  geom_point(size=3, alpha=0.8) +
+  geom_smooth(method="lm", se=FALSE, linetype="dashed", color="gray50", linewidth=1) +
+  geom_text_repel(aes(label=country), size=3, max.overlaps=20, segment.color=NA) +
+  scale_color_manual(values=continent_cols) +
+  scale_x_continuous(limits=c(0,100), expand=c(0,0)) +
+  scale_y_continuous(limits=c(0,100), expand=c(0,0)) +
+  labs(x="Water-use intensity\n(10³ m³/ha)",
+       y=expression(CO[2]~emissions~intensity~(100~kg~CO[2]/ha)), tag="c") +
+  theme_minimal() +
+  theme(panel.grid=element_blank(), axis.line=element_line(color="black"),
+        legend.position="top", legend.title=element_blank(),
+        plot.tag=element_text(size=14, face="bold"))
+plot_d <- ggplot(co2_box_data, aes(x=irrigation, y=co2_intensity, fill=irrigation)) +
+  geom_boxplot(outlier.shape=NA, alpha=0.8, width=0.6) +
+  stat_summary(fun=mean, geom="point", shape=18, size=3, color="black") +
+  stat_summary(fun=mean, fun.min=function(x) mean(x)-sd(x), fun.max=function(x) mean(x)+sd(x),
+               geom="errorbar", width=0.2, color="black") +
+  scale_fill_manual(values=irrigation_cols) +
+  scale_y_continuous(limits=c(0,450), expand=c(0,0)) +
+  labs(y = "CO2 emissions intensity (g CO2/m3)", tag = "d") +
+  theme_minimal() +
+  theme(panel.grid=element_blank(), axis.line=element_line(color="black"),
+        legend.position="none", axis.text.x=element_text(angle=90, hjust=1),
+        plot.tag=element_text(size=14, face="bold"))
+final_plot <- (plot_a + plot_b) / (plot_c + plot_d)
+final_plot
+ggsave("最终图.png", final_plot, width=12, height=14, dpi=300, bg="white")
+
+countries_a <- c("India", "China", "United States", "Pakistan", "Iran", 
+                 "Saudi Arabia", "Mexico", "Bangladesh", "Brazil", "Egypt", 
+                 "Spain", "Argentina", "Turkey", "Syria", "Afghanistan", 
+                 "Kazakhstan", "Japan", "Peru", "Venezuela", "Russia")
+current_a <- c(535, 300, 205, 135, 120, 55, 50, 45, 35, 25, 30, 30, 25, 15, 20, 15, 15, 15, 15, 10)
+future_a <- c(585, 315, 305, 140, 138, 60, 68, 80, 78, 30, 35, 35, 30, 18, 22, 18, 17, 17, 17, 55)
+continents <- c("Global", "Asia", "North America", "South America", "Africa", "Europe", "Oceania")
+current_cont_a <- c(1900, 1350, 250, 150, 120, 80, 0)
+future_cont_a <- c(2450, 1500, 420, 200, 170, 220, 20)
+df_a_main <- data.frame(
+  Country = rep(countries_a, 2),
+  Scenario = rep(c("Current (2000-2010)", "Future (3 °C warmer climate, circa 2050)"), each = length(countries_a)),
+  Value = c(current_a, future_a)
+)
+
+df_a_cont <- data.frame(
+  Continent = rep(continents, 2),
+  Scenario = rep(c("Current (2000-2010)", "Future (3 °C warmer climate, circa 2050)"), each = length(continents)),
+  Value = c(current_cont_a, future_cont_a)
+)
+current_b <- c(70, 35, 25, 12, 13, 6, 5, 4, 3, 2, 2, 2, 2, 1.5, 1.5, 1.5, 1.5, 1, 0.5, 2)
+future_b <- c(73, 36, 25.5, 12.5, 14, 6.5, 5.5, 4.5, 3.5, 2.5, 2.5, 2.5, 2.5, 2, 2, 2, 2, 1.2, 0.7, 4)
+current_cont_b <- c(215, 160, 30, 10, 12, 5, 0)
+future_cont_b <- c(235, 170, 35, 13, 15, 7, 0)
+
+df_b_main <- data.frame(
+  Country = rep(countries_a, 2),
+  Scenario = rep(c("Current (2000-2010) from energy", "Future (3 °C warmer climate, circa 2050) from energy"), each = length(countries_a)),
+  Value = c(current_b, future_b)
+)
+
+df_b_cont <- data.frame(
+  Continent = rep(continents, 2),
+  Scenario = rep(c("Current (2000-2010) from energy", "Future (3 °C warmer climate, circa 2050) from energy"), each = length(continents)),
+  Value = c(current_cont_b, future_cont_b)
+)
+my_colors <- c(
+  "Current (2000-2010)" = "#48a899",
+  "Future (3 °C warmer climate, circa 2050)" = "#d8a8d8",
+  "Current (2000-2010) from energy" = "#48a899",
+  "Future (3 °C warmer climate, circa 2050) from energy" = "#d8a8d8"
+)
+theme_custom <- theme_minimal() +
+  theme(
+    panel.grid.major.y = element_line(color = "gray90", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10),
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    plot.tag = element_text(size = 14, face = "bold", hjust = 0)
+  )
+  p_a_main <- ggplot(df_a_main, aes(x = Country, y = Value, fill = Scenario)) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = my_colors) +
+  scale_y_continuous(limits = c(0, 600), breaks = seq(0, 600, 100)) +
+  labs(
+    tag = "a",
+    y = "Energy consumption (PJ per year)",
+    x = NULL
+  ) +
+  theme_custom
+p_a_cont <- ggplot(df_a_cont, aes(x = Continent, y = Value, fill = Scenario)) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = my_colors) +
+  scale_y_continuous(limits = c(0, 2500), breaks = seq(0, 2500, 500)) +
+  labs(x = NULL, y = NULL) +
+  theme_custom +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    axis.text.y = element_text(size = 8),
+    legend.position = "none"
+  )
+  p_a <- p_a_main + inset_element(p_a_cont, left = 0.65, bottom = 0.6, right = 1, top = 1)
+  p_b_main <- ggplot(df_b_main, aes(x = Country, y = Value, fill = Scenario)) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = my_colors) +
+  scale_y_continuous(limits = c(0, 80), breaks = seq(0, 80, 20)) +
+  labs(
+    tag = "b",
+    y = "CO₂ emissions (Mt CO₂ per year)",
+    x = NULL
+  ) +
+  theme_custom
+p_b_cont <- ggplot(df_b_cont, aes(x = Continent, y = Value, fill = Scenario)) +
+  geom_col(position = "stack", width = 0.8) +
+  scale_fill_manual(values = my_colors) +
+  scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, 50)) +
+  labs(x = NULL, y = NULL) +
+  theme_custom +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    axis.text.y = element_text(size = 8),
+    legend.position = "none"
+  )
+  p_b <- p_b_main + inset_element(p_b_cont, left = 0.65, bottom = 0.6, right = 1, top = 1)
+  final_plot <- p_a / p_b + plot_layout(heights = c(1, 1))
+  print(final_plot)
+
+ggsave("reproduced_figure.png", final_plot, width = 14, height = 12, dpi = 300, bg = "white")
+
+df_energy <- data.frame(
+  scenario = c("Current", "Drip", "Sprinkler", "2000-2010\nelectricity mix", "Solar", "Wind", "Nuclear", "Hydropower", "Electricity\nmix in 2050"),
+  value = c(1896, 894, 2639, 930, 930, 930, 930, 930, 930),
+  type = "Energy Consumption (PJ per year)"
+)
+
+df_co2 <- data.frame(
+  scenario = c("Current", "Drip", "Sprinkler", "2000-2010\nelectricity mix", "Solar", "Wind", "Nuclear", "Hydropower", "Electricity\nmix in 2050"),
+  value = c(216, 100, 295, 175, 11, 3, 3, 6, 6),
+  type = "CO₂ emissions (Mt CO₂ per year)"
+)
+factor_levels <- c("Current", "Drip", "Sprinkler", "2000-2010\nelectricity mix", "Solar", "Wind", "Nuclear", "Hydropower", "Electricity\nmix in 2050")
+df_energy$scenario <- factor(df_energy$scenario, levels = factor_levels)
+df_co2$scenario <- factor(df_co2$scenario, levels = factor_levels)
+fill_energy <- c(
+  "Current" = "#A9A9A9",  # 深灰色（Current）
+  "Drip" = "#66C2A5",     # 浅绿色（Drip）
+  "Sprinkler" = "#66C2A5",# 浅绿色（Sprinkler）
+  rep("#66C2A5", 6)       # 统一浅绿色（其余场景）
+)
+
+fill_co2 <- c(
+  "Current" = "#BFBFBF",  # 浅灰色（Current）
+  "Drip" = "#FFA500",     # 橙色（Drip）
+  "Sprinkler" = "#FFA500",# 橙色（Sprinkler）
+  "2000-2010\nelectricity mix" = "#FFA500", # 橙色（2000-2010）
+  "Solar" = "#FFA500",    # 橙色（Solar）
+  "Wind" = "#FFA500",     # 橙色（Wind）
+  "Nuclear" = "#FFA500",  # 橙色（Nuclear）
+  "Hydropower" = "#FFA500",# 橙色（Hydropower）
+  "Electricity\nmix in 2050" = "#FFA500"     # 橙色（Electricity mix in 2050）
+)
+plot_a <- ggplot(df_energy, aes(x = scenario, y = value)) +
+  geom_col(aes(fill = scenario), width = 0.7) +
+   geom_text(aes(label = sprintf("%.0f", value)), vjust = -0.3, size = 3.5, color = "black") +
+   scale_fill_manual(values = fill_energy, guide = "none") +
+    labs(y = "Energy consumption\n(PJ per year)", title = "a") +
+    theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0), # 标题a左对齐
+    axis.title.x = element_blank(), # 隐藏X轴标题
+    axis.title.y = element_text(size = 10, lineheight = 1.2),
+    axis.text.x = element_text(angle = 0, hjust = 0.5, size = 8), # X轴标签不倾斜
+    axis.text.y = element_text(size = 10),
+    panel.grid.major.x = element_blank(), # 隐藏X轴网格线
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(color = "black", linewidth = 0.8),
+    plot.margin = margin(10, 10, 5, 10) # 调整内边距
+  ) +ylim(0, 2800)
+  plot_b <- ggplot(df_co2, aes(x = scenario, y = value)) +
+  geom_col(aes(fill = scenario), width = 0.7) +
+  geom_text(aes(label = sprintf("%.0f", value)), vjust = -0.3, size = 3.5, color = "black") +
+  scale_fill_manual(values = fill_co2, guide = "none") +
+  labs(y = "CO₂ emissions\n(Mt CO₂ per year)", title = "b") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(size = 10, lineheight = 1.2),
+    axis.text.x = element_text(angle = 0, hjust = 0.5, size = 8),
+    axis.text.y = element_text(size = 10),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(color = "black", linewidth = 0.8),
+    plot.margin = margin(10, 10, 5, 10)
+  ) +
+  ylim(0, 320)
+final_plot <- plot_a / plot_b +
+  plot_annotation(theme = theme(plot.background = element_rect(fill = "white", color = NA))) +
+  plot_layout(heights = c(1, 1)) # 上下等高
+print(final_plot)
+ggsave("replicated_figure.png", final_plot, width = 12, height = 8, dpi = 300, bg = "white")
+

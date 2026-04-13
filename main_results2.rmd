@@ -1,0 +1,229 @@
+df_a <- data.frame(
+  Region = rep(
+    c("East Asia", "Eastern Europe\nand Central Asia", "Latin America\nand Caribbean", 
+      "Middle East\nand North Africa", "Northern America", "South Asia", 
+      "Southeast Asia\nand Oceania", "Sub-Saharan Africa", "Western Europe"), 
+    each = 2
+  ),
+  Type = rep(c("Low-carbon electricity", "Drip"), 9),
+  Feasibility = c(
+    31, 24,   # East Asia
+    21, 24,   # Eastern Europe and Central Asia
+    30, 18,   # Latin America and Caribbean
+    49, 40,   # Middle East and North Africa
+    22, 16,   # Northern America
+    20.5, 9.5,# South Asia
+    33, 4,    # Southeast Asia and Oceania
+    31, 18,   # Sub-Saharan Africa
+    31, 29.5  # Western Europe
+  )
+)
+world <- ne_countries(scale = "medium", returnclass = "sf")
+message("✅ 世界地图底图加载成功！")
+df_b <- data.frame(
+  Region = c("Global", "Northern America", "Western Europe", "Eastern Europe\nand Central Asia", 
+             "East Asia", "Latin America\nand Caribbean", "Middle East\nand North Africa", 
+             "South Asia", "Southeast Asia\nand Oceania", "Sub-Saharan Africa"),
+  Lat = c(0, 37, 48, 50, 35, -10, 25, 20, 0, 10),   
+  Lon = c(0, -95, 10, 25, 105, -60, 45, 75, 120, 20),
+  Low_carbon = c(55, 64, 63, 15, 52, 51, 66, 53, 42, 45),
+  Drip = c(45, 36, 37, 85, 48, 49, 34, 47, 58, 55),
+  Size = c(100, 80, 90, 70, 85, 75, 95, 65, 80, 70)
+)
+plot_a <- ggplot(df_a, aes(x = Region, y = Feasibility, fill = Type)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7, color = "black", linewidth = 0.3) +
+  scale_fill_manual(values = c("Low-carbon electricity" = "#fccf00", "Drip" = "#006660")) +
+  labs(x = NULL, y = "Feasibility (%)", fill = NULL) +
+  theme_minimal() +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    axis.title.y = element_text(size = 12, color = "black"),
+    legend.position = "top",
+    legend.text = element_text(size = 10, color = "black"),
+    plot.margin = margin(10, 10, 10, 10)
+  ) +
+  ylim(0, 55)
+plot_b <- ggplot() +
+  geom_sf(data = world, fill = "#f5f5f5", color = "gray30", linewidth = 0.2) +
+  geom_scatterpie(
+    data = df_b,
+    aes(x = Lon, y = Lat, r = log10(Size + 1) * 1.2),
+    cols = c("Low_carbon", "Drip"),
+    color = "black", linewidth = 0.3, alpha = 0.9
+  ) +
+  scale_fill_manual(values = c("Low_carbon" = "#fccf00", "Drip" = "#006660")) +
+  coord_sf(xlim = c(-180, 180), ylim = c(-60, 80), expand = FALSE) +
+  labs(x = NULL, y = NULL, fill = "Contribution to CO₂ emissions reduction (%)") +
+  theme_void() +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 9, color = "black"),
+    legend.title = element_text(size = 10, color = "black"),
+    plot.margin = margin(5, 5, 5, 5)
+  ) + annotate("text", x = -170, y = 20, label = "Global\n(55%)", hjust = 0, size = 3.5) +
+  annotate("text", x = -100, y = 45, label = "Northern America\n(64%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 0, y = 55, label = "Western Europe\n(63%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 30, y = 55, label = "Eastern Europe and\nCentral Asia (15%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 110, y = 45, label = "East Asia\n(52%)", hjust = 0, size = 3.5) +
+  annotate("text", x = -70, y = -20, label = "Latin America and\nCaribbean (51%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 30, y = 30, label = "Middle East and\nNorth Africa (66%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 80, y = 30, label = "South Asia\n(53%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 125, y = 0, label = "Southeast Asia and\nOceania (42%)", hjust = 0, size = 3.5) +
+  annotate("text", x = 25, y = 0, label = "Sub-Saharan Africa\n(45%)", hjust = 0, size = 3.5)
+final_plot <- plot_a / plot_b +
+  plot_annotation(
+    tag_levels = "a",
+    theme = theme(plot.tag = element_text(size = 14, face = "bold"))
+  )
+print(final_plot)
+ggsave(
+  "replicated_figure_final.png",
+  final_plot,
+  width = 14, height = 10,
+  dpi = 300,
+  bg = "white"
+)
+
+regions <- c(
+  "East Asia", "Western Europe", "Middle East and North Africa",
+  "North America", "Latin America and Caribbean", "South Asia",
+  "Southeast Asia and Oceania", "Eastern Europe and Central Asia",
+  "Sub-Saharan Africa", "Global"
+)
+# 图a：能源投入强度 (GJ/ha)
+energy_data <- data.frame(
+  Region = factor(regions, levels = regions),
+  Fuel = c(20.5, 15.5, 1.8, 3.8, 1.5, 0.5, 0.8, 3.2, 0.2, 5.2),
+  Machinery = c(7.2, 6.8, 1.2, 2.2, 1.2, 0.3, 0.5, 1.8, 0.3, 2.3),
+  Fertilizers_production_transport = c(5.3, 4.2, 3.8, 2.8, 1.0, 2.5, 2.8, 2.5, 0.5, 3.0),
+  Irrigation = c(3.5, 2.5, 13.0, 5.7, 6.5, 5.5, 4.2, 0.8, 6.5, 5.0)
+)
+
+# 图b：碳排放强度 (kg CO₂-e/ha)
+emission_data <- data.frame(
+  Region = factor(regions, levels = regions),
+  Fuel = c(1450, 1050, 120, 280, 100, 80, 60, 220, 30, 380),
+  Machinery = c(720, 600, 80, 220, 120, 70, 80, 180, 40, 220),
+  Fertilizers_production_transport = c(600, 650, 400, 300, 150, 180, 250, 250, 50, 300),
+  Fertilizers_use = c(180, 250, 200, 250, 550, 150, 60, 80, 0, 200),
+  Irrigation = c(350, 300, 1800, 650, 500, 500, 450, 180, 700, 600)
+)
+# 图a：宽转长
+energy_long <- energy_data %>%
+  pivot_longer(cols = -Region, names_to = "Category", values_to = "Value") %>%
+  mutate(
+    Category = factor(
+      Category,
+      levels = c("Fuel", "Machinery", "Fertilizers_production_transport", "Irrigation"),
+      labels = c("Fuel", "Machinery", "Fertilizers production and transport", "Irrigation")
+    )
+  )
+emission_long <- emission_data %>%
+  pivot_longer(cols = -Region, names_to = "Category", values_to = "Value") %>%
+  mutate(
+    Category = factor(
+      Category,
+      levels = c("Fuel", "Machinery", "Fertilizers_production_transport", "Fertilizers_use", "Irrigation"),
+      labels = c("Fuel", "Machinery", "Fertilizers production and transport", "Fertilizers use", "Irrigation")
+    )
+  )
+  energy_irrigation_pct <- energy_data %>%
+  mutate(
+    Total = rowSums(select(., -Region)),
+    Irrigation_pct = round(Irrigation / Total * 100, 0)
+  ) %>%
+  select(Region, Irrigation_pct, Total)
+emission_irrigation_pct <- emission_data %>%
+  mutate(
+    Total = rowSums(select(., -Region)),
+    Irrigation_pct = round(Irrigation / Total * 100, 0)
+  ) %>%
+  select(Region, Irrigation_pct, Total)
+energy_colors <- c(
+  "Fuel" = "#a8dba8",
+  "Machinery" = "#7fbfd0",
+  "Fertilizers production and transport" = "#3b8bc0",
+  "Irrigation" = "#f7941d"
+)
+
+emission_colors <- c(
+  "Fuel" = "#a8dba8",
+  "Machinery" = "#7fbfd0",
+  "Fertilizers production and transport" = "#3b8bc0",
+  "Fertilizers use" = "#f2c078",
+  "Irrigation" = "#f7941d"
+)
+p_a <- ggplot(energy_long, aes(x = Region, y = Value, fill = Category)) +
+  geom_col(position = "stack", width = 0.8, color = "white", linewidth = 0.2) +
+  # 【关键修复】给geom_text添加inherit.aes = FALSE，切断主图层aes继承
+  geom_text(
+    data = energy_irrigation_pct,
+    aes(x = Region, y = Total, label = paste0(Irrigation_pct, "%")),
+    vjust = -0.3, size = 3.5, fontface = "bold",
+    inherit.aes = FALSE  # 核心修复：不继承主图层的fill=Category映射
+  ) +
+  scale_y_continuous(
+    limits = c(0, 40), expand = c(0, 0),
+    breaks = seq(0, 40, 5)
+  ) +
+  scale_fill_manual(values = energy_colors) +
+  theme_bw(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 11),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.tag = element_text(size = 14, face = "bold", hjust = 0)
+  ) +
+  labs(
+    tag = "a",
+    y = "Energy input intensity (GJ/ha)",
+    x = NULL
+  )
+p_b <- ggplot(emission_long, aes(x = Region, y = Value, fill = Category)) +
+  geom_col(position = "stack", width = 0.8, color = "white", linewidth = 0.2) +
+  # 【关键修复】同样添加inherit.aes = FALSE
+  geom_text(
+    data = emission_irrigation_pct,
+    aes(x = Region, y = Total, label = paste0(Irrigation_pct, "%")),
+    vjust = -0.3, size = 3.5, fontface = "bold",
+    inherit.aes = FALSE  # 核心修复
+  ) +
+  scale_y_continuous(
+    limits = c(0, 3500), expand = c(0, 0),
+    breaks = seq(0, 3500, 500)
+  ) +
+  scale_fill_manual(values = emission_colors) +
+  theme_bw(base_size = 12) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    axis.text.y = element_text(size = 10),
+    axis.title = element_text(size = 11),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.tag = element_text(size = 14, face = "bold", hjust = 0)
+  ) +
+  labs(
+    tag = "b",
+    y = expression(CO[2]*e~emissions~intensity~(kg~CO[2]*-e/ha)),
+    x = NULL
+  )
+  final_plot <- p_a / p_b + plot_layout(ncol = 1, heights = c(1, 1.2))
+  print(final_plot)
+ggsave(
+  "reproduced_agri_energy_emission.png",
+  plot = final_plot,
+  width = 16, height = 10,
+  dpi = 300,
+  bg = "white"
+)
